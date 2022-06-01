@@ -41,7 +41,7 @@ class CommentViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(
             author=self.request.user,
-            post=Post.objects.get(id=self.kwargs.get('post_id'))
+            post=get_object_or_404(Post, id=self.kwargs.get('post_id'))
         )
 
 
@@ -53,7 +53,7 @@ class FollowViewSet(mixins.ListModelMixin, mixins.CreateModelMixin,
     search_fields = ('user__username', 'following__username')
 
     def get_queryset(self):
-        return Follow.objects.filter(user=self.request.user)
+        return self.request.user.follower.all()
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user,)

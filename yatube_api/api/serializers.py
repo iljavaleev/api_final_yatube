@@ -11,6 +11,7 @@ class PostSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Post
+        # Предпочитаю явно указывать. Мне так легче ориентироваться.
         fields = ('id', 'text', 'pub_date', 'author', 'image', 'group')
         read_only_fields = ('author',)
 

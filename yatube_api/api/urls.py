@@ -6,11 +6,11 @@ from .views import PostViewSet, GroupViewSet, CommentViewSet, FollowViewSet
 
 router = DefaultRouter()
 
-router.register(r'posts', PostViewSet, basename='posts')
+router.register('posts', PostViewSet, basename='posts')
 router.register(r'posts/(?P<post_id>[0-9]+)/comments',
                 CommentViewSet, basename='comments')
-router.register(r'groups', GroupViewSet, basename='groups')
-router.register(r'follow', FollowViewSet, basename='follow')
+router.register('groups', GroupViewSet, basename='groups')
+router.register('follow', FollowViewSet, basename='follow')
 
 urlpatterns = [
     path('v1/', include(router.urls)),

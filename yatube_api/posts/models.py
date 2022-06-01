@@ -70,4 +70,4 @@ class Follow(models.Model):
 
     def __str__(self):
         return (f'Подписка пользователя {self.user.username} на '
-                f'автора {self.author.username}')
+                f'автора {self.following.username}')
