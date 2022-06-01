@@ -1,36 +1,29 @@
 from rest_framework import serializers
 from rest_framework.relations import SlugRelatedField
-
+from django.contrib.auth import get_user_model
+from rest_framework.validators import UniqueTogetherValidator
 
 from posts.models import Comment, Post, Group, Follow
 
 
 class PostSerializer(serializers.ModelSerializer):
-    # author = SlugRelatedField(slug_field='username', read_only=True)
-    author = serializers.SerializerMethodField()
+    author = SlugRelatedField(slug_field='username', read_only=True)
 
     class Meta:
         model = Post
         fields = ('id', 'text', 'pub_date', 'author', 'image', 'group')
         read_only_fields = ('author',)
 
-    def get_author(self, obj):
-        return obj.author.username
-
 
 class CommentSerializer(serializers.ModelSerializer):
-    # author = serializers.SlugRelatedField(
-    #     read_only=True, slug_field='username'
-    # )
-    author = serializers.SerializerMethodField()
+    author = serializers.SlugRelatedField(
+        read_only=True, slug_field='username'
+    )
 
     class Meta:
         model = Comment
         fields = ('id', 'author', 'post', 'text', 'created')
         read_only_fields = ('post',)
-
-    def get_author(self, obj):
-        return obj.author.username
 
 
 class GroupSerializer(serializers.ModelSerializer):
@@ -41,15 +34,29 @@ class GroupSerializer(serializers.ModelSerializer):
 
 
 class FollowSerializer(serializers.ModelSerializer):
-    user = serializers.PrimaryKeyRelatedField(
+    user = serializers.SlugRelatedField(
+        slug_field='username',
         read_only=True,
         default=serializers.CurrentUserDefault()
     )
-    following = serializers.SerializerMethodField()
+    following = serializers.SlugRelatedField(
+        slug_field='username', queryset=get_user_model().objects.all()
+    )
 
     class Meta:
         model = Follow
         fields = ('user', 'following')
+        validators = [
+            UniqueTogetherValidator(
+                fields=('user', 'following'),
+                queryset=Follow.objects.all(),
 
-    def get_following(self, obj):
-        return [o.author.username for o in list(obj)]
+            )
+        ]
+
+    def validate_following(self, value):
+        user = self.context.get('request').user
+        if get_user_model().objects.get(username=value) == user:
+            raise serializers.ValidationError(
+                "Вы не можете подписаться на самого себя")
+        return value
